@@ -15,7 +15,6 @@ export class AuthController {
   async login(@Body() loginUser) {
     try {
       return await this.authService.loginCognito(loginUser)
-      // return await this.authService.authenticateUser(loginUser);
     } catch (e) {
       throw new BadRequestException(e.message);
     }
@@ -32,6 +31,4 @@ export class AuthController {
     return await this.authService.setPasswordUsingVerficationCode(setpassword);
   }
   
-
-
 }

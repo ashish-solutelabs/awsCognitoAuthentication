@@ -34,23 +34,12 @@ export class AuthService {
     
     const signupCognito = new Promise((resolve, reject) =>  this.userPool.signUp(name,password,[idAttribute,emailAttribute],null,(err,data)=>{
       if(err){
-        reject(err)
+        return reject(err)
       }else {
         resolve(data)
       }})
     )
     console.log(await signupCognito)
-
-    
-
-    // const tokenUser = {
-    //   "name":name,
-    //   "password":password
-    // }
-
-    // const accessToken = await this.loginCognito(tokenUser)
-    // console.log(accessToken)
-    // if()
     
     if(await signupCognito){
       const userData = {
@@ -82,7 +71,7 @@ export class AuthService {
         }) 
       },
       onFailure: (err) => {
-      reject( {
+      return reject( {
           'success': 0,
           'message': err
         })
@@ -105,7 +94,7 @@ export class AuthService {
         });
       },
       onFailure: (err)=> {
-        reject({
+        return reject({
           "success": 0,
           "message": err
         });
@@ -121,7 +110,7 @@ export class AuthService {
 
     const confirmSetPassword = new Promise((resolve, reject) =>user.confirmPassword(verificationCode,newPassword,{
           onFailure: (err) => {
-            reject({
+            return reject({
               "success": 0,
               "message": err
             });
@@ -135,7 +124,7 @@ export class AuthService {
           }})
         )
     if(await confirmSetPassword){
-      this.userService.updateForgotPassword(name, newPassword)
+      await this.userService.updateForgotPassword(name, newPassword)
     }
     return confirmSetPassword
   }

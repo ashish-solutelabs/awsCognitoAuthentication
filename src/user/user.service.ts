@@ -1,17 +1,18 @@
-import { ConflictException, Injectable, InternalServerErrorException, NotAcceptableException } from '@nestjs/common';
+import { ConflictException, Injectable, NotAcceptableException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { CreateUserDto } from './dto/create-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
 import { User } from './entities/user.entity';
 import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class UserService {
+  createUser(createAdminDto: any) {
+    throw new Error('Method not implemented.');
+  }
 
   constructor(@InjectRepository(User) private repo: Repository<User>){}
 
-  async create(createUserDto) {
+  async create(createUserDto) { 
     console.log(createUserDto)
 
     const {id,username,email,password} = createUserDto
@@ -56,24 +57,8 @@ export class UserService {
       }
     return {
             success: 1,
-            message: `user password update successfully`
-        }
+            message: `user password update Successfully`
+    }
 
   }
-
-//   findAll() {
-//     return `This action returns all user`;
-//   }
-
-//   findOne(id: number) {
-//     return `This action returns a #${id} user`;
-//   }
-
-//   update(id: number, updateUserDto: UpdateUserDto) {
-//     return `This action updates a #${id} user`;
-//   }
-
-//   remove(id: number) {
-//     return `This action removes a #${id} user`;
-//   }
 }

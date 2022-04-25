@@ -1,15 +1,14 @@
 import { Injectable } from '@nestjs/common';
-import { rejects } from 'assert';
-import { CognitoIdentityServiceProvider, config } from 'aws-sdk';
+import { CognitoIdentityServiceProvider } from 'aws-sdk';
 import { AuthConfig } from 'src/auth/auth.config';
-import { CreateAdminDto } from './dto/create-admin.dto';
-import { UpdateAdminDto } from './dto/update-admin.dto';
+import { UserService } from 'src/user/user.service';
+import { v4 as uuidv4 } from 'uuid';
 
 @Injectable()
 export class AdminService {
   private adminCognito:CognitoIdentityServiceProvider;
 
-  constructor(private authConfig:AuthConfig){
+  constructor(private authConfig:AuthConfig,private userService:UserService){
     this.adminCognito = new CognitoIdentityServiceProvider({
       apiVersion: '2016-04-18',
       region: 'us-east-1',
@@ -22,13 +21,18 @@ export class AdminService {
 
   async create(createAdminDto) {
    const {name,email} = createAdminDto
-
-   const userpoolid = process.env.COGNITO_USER_POOL_ID;
+  
+   const id = await uuidv4();
+    console.log(id)
 
    const adminAddUserValue = {
     UserPoolId: this.authConfig.userPoolId,
     Username: name,
     UserAttributes: [
+      {
+        Name: 'custom:id',
+        Value: id
+      },
       {
         Name: 'email',
         Value: email,
@@ -44,14 +48,23 @@ export class AdminService {
    }
    const adminAddUser = new Promise((resolve, reject) => this.adminCognito.adminCreateUser(adminAddUserValue,(err,data)=>{
      if(err){
-      reject(err)
+      return reject(err)
      }
      else{
       resolve(data)
      }
    }))
-   console.log(await adminAddUser)
 
+   if(adminAddUser){
+      const createUser= {
+        "id": id,
+        "username" :name,
+        "email": email,
+        "password" :adminAddUserValue.TemporaryPassword
+      }
+      console.log(createUser)
+      await this.userService.create(createUser)
+    }
    return adminAddUser
   }
 
@@ -71,7 +84,7 @@ export class AdminService {
     const adminInitiate =new Promise((resolve, reject) => this.adminCognito.adminInitiateAuth(initiateData,(err,result) => {
       if (err) {
         console.error(err);
-        reject(err);
+        return reject(err);
       }
       else{
         console.log(result);
@@ -97,29 +110,14 @@ export class AdminService {
 
     const adminChallenge = new Promise((resolve, reject) =>this.adminCognito.respondToAuthChallenge(authData,(err, result) =>{
       if(err){
-        reject(err);
+        return reject(err);
       }
       else{
         resolve(result)
       }
     })) 
+    
     console.log(adminChallenge)
     return adminChallenge
   }
-
-  // findAll() {
-  //   return `This action returns all admin`;
-  // }
-
-  // findOne(id: number) {
-  //   return `This action returns a #${id} admin`;
-  // }
-
-  // update(id: number, updateAdminDto: UpdateAdminDto) {
-  //   return `This action updates a #${id} admin`;
-  // }
-
-  // remove(id: number) {
-  //   return `This action removes a #${id} admin`;
-  // }
 }
