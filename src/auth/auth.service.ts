@@ -48,7 +48,7 @@ export class AuthService {
         email:email,
         password: password
       }
-      return await this.userService.create(userData)
+      await this.userService.create(userData)
     }
     return signupCognito
 
